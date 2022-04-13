@@ -9,6 +9,7 @@ def args_parser():
     parser.add_argument("--latent_size", type=int, default=250, help="latent embeddings size")
     parser.add_argument("--epochs", type=int, default=50, help="rounds of training")
     parser.add_argument("--lr", type=float, default=0.001, help="learning rate")
+    parser.add_argument("--weight_decay", type=float, default=0.0001, help="weight decay")
     parser.add_argument("--batch_size", type=int, default=1024, help="batch size")
     parser.add_argument("--momentum", type=float, default=0.995, help="target encoder momentum")
     parser.add_argument("--train_ratio", type=float, default=0.8, help="train split ratio")

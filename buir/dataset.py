@@ -69,7 +69,8 @@ class InteractionDataset(Dataset):
         self.interactions = interactions
 
     def __getitem__(self, index):
-        return torch.tensor(self.interactions[index])
+        _user, _item = self.interactions[index]
+        return torch.tensor(_user), torch.tensor(_item)
 
     def __len__(self):
         return len(self.interactions)

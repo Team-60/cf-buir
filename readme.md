@@ -13,6 +13,7 @@ python3 train.py
 ## Milestones
 
 - [ ] Simple BUIR with data movielens pipeline ready
+    - [ ] Early stopping
 - [ ] BUIR neighbourhood augmentation
 - [ ] Artificial Sparsity ❓
 - [ ] Cold Start (data pipeline and clustering)
