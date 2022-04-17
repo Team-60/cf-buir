@@ -8,9 +8,15 @@ _logger = logging.getLogger("cf-buir")
 
 def init_logger(filename: str):
     global _logger
+
     handler = logging.FileHandler(filename)
     handler.setFormatter(logging.Formatter("[%(name)s] %(asctime)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"))
     _logger.addHandler(handler)
+
+    handlerStdout = logging.StreamHandler()
+    handlerStdout.setFormatter(logging.Formatter("[%(name)s] %(asctime)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"))
+    _logger.addHandler(handlerStdout)
+
     _logger.setLevel(logging.DEBUG)
 
 
