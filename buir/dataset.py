@@ -55,6 +55,27 @@ def init_data_matrices():
 
     logger.info("filtered_data_mat initialized!")
 
+def init_adj_matrix():
+    
+    user_item_adj_mat = np.where(filtered_data_mat > 0, 1, 0)
+    full_adj_mat = np.zeros((NUM_USERS + NUM_ITEMS, NUM_USERS + NUM_ITEMS))
+    full_adj_mat[:NUM_USERS, NUM_USERS:] = user_item_adj_mat
+    full_adj_mat[NUM_USERS:, :NUM_USERS] = user_item_adj_mat.T
+
+    np.seterr(divide='ignore')
+    D = np.power(np.sum(full_adj_mat, axis=1), -0.5)
+    D[np.isinf(D)] = 0
+    np.seterr(divide='warn')
+
+    D_mat = np.diag(D)
+    norm_adj_mat = D_mat @ full_adj_mat @ D_mat
+
+    # TODO: self loop
+    self_loop = False
+    if self_loop:
+        norm_adj_mat += np.diag(np.ones(NUM_USERS + NUM_ITEMS))
+
+    return norm_adj_mat
 
 # -------------- form train test splits --------------
 
@@ -94,3 +115,6 @@ def get_test_train_interactions(split_ratio: float) -> Tuple[InteractionDataset,
 
     logger.info(f"total train_interactions: {len(train_interactions)}, test_interactions: {len(test_interactions)}")
     return InteractionDataset(train_interactions), InteractionDataset(test_interactions)
+
+def get_adj_matrix() -> np.array:
+    return init_adj_matrix()
