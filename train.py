@@ -6,10 +6,11 @@ import json
 import matplotlib.pyplot as plt
 
 # buir dependencies
-from buir.buir_id import BUIR_ID
+from models.BUIR_ID import BUIR_ID
+from models.BUIR_NB import BUIR_NB
 from buir.utils import init_logger, get_logger, init_device, get_device
 from buir.options import args_parser
-from buir.dataset import NUM_ITEMS, NUM_USERS, get_test_train_interactions, init_data_matrices
+from buir.dataset import NUM_ITEMS, NUM_USERS, get_test_train_interactions, init_data_matrices, get_adj_matrix
 
 # -------------- set seed --------------
 
@@ -22,7 +23,7 @@ torch.cuda.manual_seed_all(0)
 args = args_parser()
 
 EXP_FOLDER = f"experiments/{args.exp_name}"
-os.makedirs(EXP_FOLDER)
+os.makedirs(EXP_FOLDER, exist_ok=True)
 
 init_logger(f"{EXP_FOLDER}/logs.log")
 logger = get_logger()
@@ -50,10 +51,18 @@ test_dataloader = DataLoader(
     num_workers=args.num_workers,
     shuffle=True,
 )
+norm_adj_mat = get_adj_matrix()
 
 # -------------- setup model --------------
 
-model = BUIR_ID(NUM_USERS, NUM_ITEMS, args.latent_size, args.momentum)
+if args.model == 'buir-id':
+    model = BUIR_ID(NUM_USERS, NUM_ITEMS, args.latent_size, args.momentum)
+elif args.model == 'buir-nb':
+    model = BUIR_NB(NUM_USERS, NUM_ITEMS, args.latent_size, norm_adj_mat, args.momentum)
+else:
+    logger.info("Invalid model type: {} -- chocies : 'buir-nb', 'buir-id' (default)".format(args.model))
+    exit(1)
+
 model = model.to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 logger.info("model initialized!")
