@@ -11,6 +11,7 @@ from models.BUIR_NB import BUIR_NB
 from buir.utils import init_logger, get_logger, init_device, get_device
 from buir.options import args_parser
 from buir.dataset import NUM_ITEMS, NUM_USERS, get_test_train_interactions, init_data_matrices, get_adj_matrix
+from buir.evaluation import evaluate, print_eval_results, plot_eval_results
 
 # -------------- set seed --------------
 
@@ -38,7 +39,7 @@ logger.info(f"device used: {device}")
 # -------------- get data --------------
 
 init_data_matrices()
-train_interactions_ds, test_interactions_ds = get_test_train_interactions(args.train_ratio)
+train_interactions_ds, test_interactions_ds, train_mat, test_mat = get_test_train_interactions(args.train_ratio)
 train_dataloader = DataLoader(
     train_interactions_ds,
     batch_size=args.batch_size,
@@ -70,7 +71,10 @@ logger.info("model initialized!")
 # -------------- training --------------
 
 epoch_tr_losses = []
+epoch_te_losses = []
+eval_results = []
 for epoch in range(args.epochs):
+    logger.info('======================')
     train_loss, train_samples = 0, 0
     model.train()
     for (b_users, b_items) in train_dataloader:
@@ -85,9 +89,29 @@ for epoch in range(args.epochs):
         b_loss.backward()
         optimizer.step()
         model._update_target()
+
     train_loss /= train_samples
     epoch_tr_losses.append(train_loss)
     logger.info(f"train loss after epoch {epoch}: loss ({train_loss:.5f})")
+
+    model.eval()
+    test_loss, test_samples = 0, 0
+    with torch.no_grad():
+        for (b_users, b_items) in test_dataloader:
+            b_users, b_items = b_users.to(device), b_items.to(device)
+            u_online, u_target, i_online, i_target = model((b_users, b_items))
+            b_loss = model.get_loss((u_online, u_target, i_online, i_target))
+
+            test_loss += b_loss.item() * b_users.shape[0]
+            test_samples += b_users.shape[0]
+        
+        eval_result = evaluate(model, test_dataloader, train_mat, None, test_mat)
+        print_eval_results(logger, eval_result)
+
+        test_loss /= test_samples
+        epoch_te_losses.append(test_loss)
+        logger.info(f"test loss after epoch {epoch}: loss ({test_loss:.5f})")
+        eval_results.append(eval_result)
 
     # !TODO: Add evaluation & early stopping
 
@@ -95,10 +119,16 @@ for epoch in range(args.epochs):
 
 plt.figure()
 plt.plot(range(args.epochs), epoch_tr_losses, label="train losses")
+plt.plot(range(args.epochs), epoch_te_losses, label="test losses")
 plt.xlabel("epochs")
 plt.ylabel("loss")
 plt.title("training metrics")
 plt.legend()
-plt.savefig(f"{EXP_FOLDER}/training-plot.png")
+plt.savefig(f"{EXP_FOLDER}/loss-plot.png")
 
+plot_eval_results(plt, EXP_FOLDER, eval_results)
+
+# -------------- saving model -------------
 torch.save(model, f"{EXP_FOLDER}/model.pt")
+
+

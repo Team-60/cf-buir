@@ -46,8 +46,12 @@ def init_data_matrices():
     def get_mean(x: np.array) -> float:
         x_ = x[x > 0]
         return x_.sum() / len(x_)
+    
+    def get_std(x: np.array) -> float:
+        x_ = x[x > 0]
+        return x_.std()
 
-    user_thresh = np.array([get_mean(data_mat[i]) for i in range(NUM_USERS)])  # TODO: downcast?
+    user_thresh = np.array([get_mean(data_mat[i]) + get_std(data_mat[i]) for i in range(NUM_USERS)])  # TODO: downcast?
     filtered_data_mat = np.zeros((NUM_USERS, NUM_ITEMS))
     for i in range(NUM_USERS):
         for j in range(NUM_ITEMS):
@@ -113,8 +117,16 @@ def get_test_train_interactions(split_ratio: float) -> Tuple[InteractionDataset,
             else:
                 test_interactions.append((i, j))
 
+    train_mat = np.zeros((NUM_USERS, NUM_ITEMS))
+    test_mat = np.zeros((NUM_USERS, NUM_ITEMS))
+    for i, j in train_interactions:
+        train_mat[i, j] = 1
+
+    for i, j in test_interactions:
+        test_mat[i, j] = 1
+        
     logger.info(f"total train_interactions: {len(train_interactions)}, test_interactions: {len(test_interactions)}")
-    return InteractionDataset(train_interactions), InteractionDataset(test_interactions)
+    return InteractionDataset(train_interactions), InteractionDataset(test_interactions), train_interactions, test_interactions
 
 def get_adj_matrix() -> np.array:
     return init_adj_matrix()
