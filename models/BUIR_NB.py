@@ -29,10 +29,10 @@ class BUIR_NB(nn.Module):
 
     def forward(self, inputs):
         o_user, o_item = self.o_encoder(inputs)
-        t_user, t_item = self.o_encoder(inputs)
+        t_user, t_item = self.t_encoder(inputs)
 
         o_user = self.F_layer(o_user)
-        t_user = self.F_layer(t_user)
+        o_item = self.F_layer(o_item)
         return o_user, t_user, o_item, t_item
 
     @torch.no_grad()
