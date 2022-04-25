@@ -56,9 +56,9 @@ norm_adj_mat = get_adj_matrix()
 
 # -------------- setup model --------------
 
-if args.model == 'buir-id':
+if args.model == "buir-id":
     model = BUIR_ID(NUM_USERS, NUM_ITEMS, args.latent_size, args.momentum)
-elif args.model == 'buir-nb':
+elif args.model == "buir-nb":
     model = BUIR_NB(NUM_USERS, NUM_ITEMS, args.latent_size, norm_adj_mat, args.momentum)
 else:
     logger.info("Invalid model type: {} -- chocies : 'buir-nb', 'buir-id' (default)".format(args.model))
@@ -74,7 +74,7 @@ epoch_tr_losses = []
 epoch_te_losses = []
 eval_results = []
 for epoch in range(args.epochs):
-    logger.info('======================')
+    logger.info("======================")
     train_loss, train_samples = 0, 0
     model.train()
     for (b_users, b_items) in train_dataloader:
@@ -104,7 +104,7 @@ for epoch in range(args.epochs):
 
             test_loss += b_loss.item() * b_users.shape[0]
             test_samples += b_users.shape[0]
-        
+
         eval_result = evaluate(model, test_dataloader, train_mat, None, test_mat)
         print_eval_results(logger, eval_result)
 
@@ -130,5 +130,3 @@ plot_eval_results(plt, EXP_FOLDER, eval_results)
 
 # -------------- saving model -------------
 torch.save(model, f"{EXP_FOLDER}/model.pt")
-
-

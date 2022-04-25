@@ -40,13 +40,13 @@ def init_data_matrices():
     # -------------- filter positive interactions for OCCF --------------
     """
     Metric used for OCCF:
-    - Ratings greater than mean
+    - Ratings greater than mean + std
     """
 
     def get_mean(x: np.array) -> float:
         x_ = x[x > 0]
         return x_.sum() / len(x_)
-    
+
     def get_std(x: np.array) -> float:
         x_ = x[x > 0]
         return x_.std()
@@ -59,17 +59,20 @@ def init_data_matrices():
 
     logger.info("filtered_data_mat initialized!")
 
+
 def init_adj_matrix():
-    
+    """
+    Initialize adj matrix
+    """
     user_item_adj_mat = np.where(filtered_data_mat > 0, 1, 0)
     full_adj_mat = np.zeros((NUM_USERS + NUM_ITEMS, NUM_USERS + NUM_ITEMS))
     full_adj_mat[:NUM_USERS, NUM_USERS:] = user_item_adj_mat
     full_adj_mat[NUM_USERS:, :NUM_USERS] = user_item_adj_mat.T
 
-    np.seterr(divide='ignore')
+    np.seterr(divide="ignore")
     D = np.power(np.sum(full_adj_mat, axis=1), -0.5)
     D[np.isinf(D)] = 0
-    np.seterr(divide='warn')
+    np.seterr(divide="warn")
 
     D_mat = np.diag(D)
     norm_adj_mat = D_mat @ full_adj_mat @ D_mat
@@ -80,6 +83,7 @@ def init_adj_matrix():
         norm_adj_mat += np.diag(np.ones(NUM_USERS + NUM_ITEMS))
 
     return norm_adj_mat
+
 
 # -------------- form train test splits --------------
 
@@ -101,7 +105,7 @@ class InteractionDataset(Dataset):
         return len(self.interactions)
 
 
-def get_test_train_interactions(split_ratio: float) -> Tuple[InteractionDataset, InteractionDataset]:
+def get_test_train_interactions(split_ratio: float) -> Tuple[InteractionDataset, InteractionDataset, List[Interaction], List[Interaction]]:
     """
     For each user, consider a rating to be training with split_ratio probability
     """
@@ -124,9 +128,10 @@ def get_test_train_interactions(split_ratio: float) -> Tuple[InteractionDataset,
 
     for i, j in test_interactions:
         test_mat[i, j] = 1
-        
+
     logger.info(f"total train_interactions: {len(train_interactions)}, test_interactions: {len(test_interactions)}")
     return InteractionDataset(train_interactions), InteractionDataset(test_interactions), train_interactions, test_interactions
+
 
 def get_adj_matrix() -> np.array:
     return init_adj_matrix()

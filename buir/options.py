@@ -6,7 +6,7 @@ def args_parser():
     parser.add_argument("--exp_name", type=str, default="default", help="experiment name")
     parser.add_argument("--exp_disc", type=str, default="default", help="description")
 
-    parser.add_argument("--model", type=str, default='buir-id', help="type of model used")
+    parser.add_argument("--model", type=str, default="buir-id", help="type of model used")
     parser.add_argument("--latent_size", type=int, default=250, help="latent embeddings size")
     parser.add_argument("--epochs", type=int, default=50, help="rounds of training")
     parser.add_argument("--lr", type=float, default=0.001, help="learning rate")

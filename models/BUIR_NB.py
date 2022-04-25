@@ -1,7 +1,7 @@
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 
 class BUIR_NB(nn.Module):
     def __init__(self, num_users, num_items, hidden_dim, adj_mat, momentum, num_layers=3, drop_out=False):
@@ -25,7 +25,7 @@ class BUIR_NB(nn.Module):
 
     def _update_target(self):
         for o_param, t_param in zip(self.o_encoder.parameters(), self.t_encoder.parameters()):
-            t_param.data = t_param.data * self.momentum + o_param.data * (1. - self.momentum)
+            t_param.data = t_param.data * self.momentum + o_param.data * (1.0 - self.momentum)
 
     def forward(self, inputs):
         o_user, o_item = self.o_encoder(inputs)
@@ -41,21 +41,17 @@ class BUIR_NB(nn.Module):
         return self.F_layer(user), user, self.F_layer(item), item
 
     def get_loss(self, output):
-
         output = list(output)
         for i in range(len(output)):
             output[i] = F.normalize(output[i], dim=-1)
-
         o_user, t_user, o_item, t_item = output
-
         loss = 2 * ((1 - (o_user * t_item).sum(dim=-1)) + (1 - (o_item * t_user).sum(dim=-1)))
         return loss.mean()
 
+
 class LGCN_Encoder(nn.Module):
     def __init__(self, num_users, num_items, adj_mat, hidden_dim, num_layers=3, drop_out=0):
-
         super().__init__()
-
         self.num_users = num_users
         self.num_items = num_items
         self.adj_mat = torch.Tensor(adj_mat)
@@ -72,39 +68,32 @@ class LGCN_Encoder(nn.Module):
         nn.init.xavier_uniform_(self.i_embed)
 
     def forward(self, inputs):
-
         embeddings = torch.cat([self.u_embed, self.i_embed], 0)
         mat = self.drop_out(self.adj_mat)
-
         all_embeddings = [embeddings]
 
-        for layer in range(self.num_layers):
+        for _ in range(self.num_layers):
             embeddings = torch.matmul(mat, embeddings)
             all_embeddings.append(embeddings)
 
         all_embeddings = torch.mean(torch.stack(all_embeddings, dim=1), dim=1)
 
         users, items = inputs
-        user_embeddings = all_embeddings[:self.num_users, :][users]
-        item_embeddings = all_embeddings[self.num_users:, :][items]
+        user_embeddings = all_embeddings[: self.num_users, :][users]
+        item_embeddings = all_embeddings[self.num_users :, :][items]
 
         return user_embeddings, item_embeddings
-    
+
     @torch.no_grad()
     def get_embeddings(self):
-
         embeddings = torch.cat([self.u_embed, self.i_embed], 0)
         mat = self.drop_out(self.adj_mat)
-
         all_embeddings = [mat]
 
-        for layer in range(self.num_layers):
-            mat = torch.matmul(mat, ego_embeddings)
+        for _ in range(self.num_layers):
+            mat = torch.matmul(mat, embeddings)
             all_embeddings.append(mat)
 
         all_embeddings = torch.mean(torch.stack(all_embeddings, dim=1), dim=1)
 
-        return all_embeddings[:self.num_users, :], all_embeddings[self.num_users:, :]
-
-
-
+        return all_embeddings[: self.num_users, :], all_embeddings[self.num_users :, :]
