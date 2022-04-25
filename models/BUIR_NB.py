@@ -88,11 +88,11 @@ class LGCN_Encoder(nn.Module):
     def get_embeddings(self):
         embeddings = torch.cat([self.u_embed, self.i_embed], 0)
         mat = self.drop_out(self.adj_mat)
-        all_embeddings = [mat]
+        all_embeddings = [embeddings]
 
         for _ in range(self.num_layers):
-            mat = torch.matmul(mat, embeddings)
-            all_embeddings.append(mat)
+            embeddings = torch.matmul(mat, embeddings)
+            all_embeddings.append(embeddings)
 
         all_embeddings = torch.mean(torch.stack(all_embeddings, dim=1), dim=1)
 
