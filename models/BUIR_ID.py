@@ -20,7 +20,6 @@ class BUIR_ID(nn.Module):
 
         self.predictor = nn.Linear(hidden_dim, hidden_dim)
         nn.init.xavier_normal_(self.predictor.weight.data)
-        nn.init.xavier_normal_(self.predictor.bias.data)
 
         # init target
         for param_o, param_t in zip(self.uo_encoder.parameters(), self.ut_encoder.parameters()):

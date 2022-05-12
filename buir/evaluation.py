@@ -87,7 +87,6 @@ def evaluate(model, data_loader, train_mat, valid_mat, test_mat):
 
 
 def print_eval_results(logger, eval_results):
-
     for mode in ["test"]:
         for topk in [10, 20, 50]:
             p = eval_results[mode]["P" + str(topk)]
@@ -97,7 +96,6 @@ def print_eval_results(logger, eval_results):
 
 
 def plot_eval_results(plt, EXP_FOLDER, list_eval_results):
-
     eval_list_results = {"P10": [], "P20": [], "P50": [], "R10": [], "R20": [], "R50": [], "N10": [], "N20": [], "N50": []}
     for mode in ["test"]:
         for topk in [10, 20, 50]:

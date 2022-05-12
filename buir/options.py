@@ -16,5 +16,7 @@ def args_parser():
     parser.add_argument("--train_ratio", type=float, default=0.8, help="train split ratio")
 
     parser.add_argument("--num_workers", type=int, default=0, help="num workers dataloader")
+    parser.add_argument("--cold_start", type=int, default=0, help="wether to perform cold start")
+    parser.add_argument("--cold_start_clusters", type=int, default=10, help="cold start clusters")
     args = parser.parse_args()
     return args
