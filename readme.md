@@ -1,5 +1,9 @@
 # Collaborative Filtering | BUIR
 
+An impementation of ["Bootstrapping User and Item Representations for One-Class Collaborative Filtering"](https://arxiv.org/abs/2105.06323).
+
+Additionally, formulation of cold start problem over the existing paper.
+
 ## Run
 
 **Store ml-100k dataset under `data`**
